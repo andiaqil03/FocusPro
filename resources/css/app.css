@@ -1,12 +1,15 @@
-@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source "../**/*.blade.php";
-@source "../**/*.js";
-@source "../**/*.vue";
+/* Priority Colors */
+.priority-p1 { background-color: #ffcccc; }  /* Red for highest priority */
+.priority-p2 { background-color: #ffeb99; }  /* Yellow */
+.priority-p3 { background-color: #cce5ff; }  /* Light Blue */
+.priority-p4 { background-color: #e6e6e6; }  /* Grey for lowest priority */
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
-}
+/* Badge Styling */
+.badge-p1 { background-color: #ff4d4d; color: white; }  /* Red */
+.badge-p2 { background-color: #ffcc00; color: black; }  /* Yellow */
+.badge-p3 { background-color: #4da6ff; color: white; }  /* Blue */
+.badge-p4 { background-color: #808080; color: white; }  /* Grey */
