@@ -30,14 +30,30 @@
                             {{ $task->priority }}
                         </span>
                     </td>
-                    <td class="py-2 px-4 capitalize">{{ $task->status }}</td>
+                    <td class="py-2 px-4 capitalize">
+                        <span class="px-3 py-1 text-white text-sm rounded-md 
+                            {{ $task->status == 'completed' ? 'bg-green-500' : 'bg-yellow-500' }}">
+                            {{ ucfirst($task->status) }}
+                        </span>
+                    </td>
                     <td class="py-2 px-4">
                         <a href="{{ route('tasks.edit', $task->id) }}" class="text-yellow-400">Edit</a> |
+
+                        <!-- Mark as Completed Button -->
+                        @if($task->status != 'completed')
+                            <form action="{{ route('tasks.complete', $task->id) }}" method="POST" class="inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="text-blue-400 hover:text-blue-500 ml-2">Mark as Completed</button>
+                            </form>
+                        @endif |
+
                         <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" class="inline">
                             @csrf @method('DELETE')
                             <button type="submit" class="text-red-400" onclick="return confirm('Are you sure?')">Delete</button>
                         </form>
                     </td>
+
                 </tr>
                 @endforeach
             </tbody>

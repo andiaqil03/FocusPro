@@ -32,7 +32,7 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
-            'priority' => 'required|in:P1, P2, P3, P4',
+            'priority' => 'required|in:P1,P2,P3,P4',
             'status' => 'required|in:pending,in_progress,completed',
         ]);
 
@@ -87,4 +87,12 @@ class TaskController extends Controller
         $task->delete();
         return redirect()->route('tasks.index')->with('success', 'Task deleted successfully!');
     }
+
+    public function markAsCompleted(Task $task)
+    {
+        $task->update(['status' => 'completed']);
+
+        return redirect()->route('tasks.index')->with('success', 'Task marked as completed.');
+    }
+
 }

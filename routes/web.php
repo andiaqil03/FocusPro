@@ -23,6 +23,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('tasks', TaskController::class);
+    Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -33,5 +34,8 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
 });
+
+Route::patch('/tasks/{task}/complete', [TaskController::class, 'markAsCompleted'])->name('tasks.complete');
+
 
 require __DIR__.'/auth.php';
