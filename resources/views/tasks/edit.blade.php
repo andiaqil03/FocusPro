@@ -22,6 +22,13 @@
             </div>
 
             <div class="mb-4">
+                <label for="category" class="block text-gray-200">Category</label>
+                <input type="text" id="category" name="category" value="{{ $task->category }}"
+                    class="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring focus:ring-blue-500">
+            </div>
+
+
+            <div class="mb-4">
                 <label for="due_date" class="block text-gray-200">Due Date</label>
                 <input type="date" id="due_date" name="due_date" value="{{ $task->due_date }}" 
                     class="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring focus:ring-blue-500">

@@ -14,6 +14,9 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <!-- SweetAlert2 CDN -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -30,21 +33,34 @@
 
             <!-- Page Content -->
             <main class="p-4">
-                @if (session('success'))
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                        {{ session('success') }}
-                    </div>
-                @endif
+            @if (session('success'))
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: @json(session('success')),
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                });
+            </script>
+            @endif
 
-                @if ($errors->any())
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                        <ul class="list-disc list-inside">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+
+            @if ($errors->any())
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        html: `{!! implode('<br>', $errors->all()) !!}`
+                    });
+                });
+            </script>
+            @endif
+
 
                 @yield('content')
             </main>

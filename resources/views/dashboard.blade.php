@@ -1,17 +1,29 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    {{ __("You're logged in!") }}
-                </div>
-            </div>
+@section('content')
+<div class="container mx-auto p-6">
+    <h2 class="text-2xl font-bold text-white mb-6">Dashboard Overview</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+        <div class="bg-blue-500 text-white p-6 rounded-lg shadow-md">
+            <p class="text-lg font-semibold">Total Tasks</p>
+            <h3 class="text-3xl font-bold mt-2">{{ $totalTasks }}</h3>
+        </div>
+
+        <div class="bg-green-500 text-white p-6 rounded-lg shadow-md">
+            <p class="text-lg font-semibold">Completed Tasks</p>
+            <h3 class="text-3xl font-bold mt-2">{{ $completedTasks }}</h3>
+        </div>
+
+        <div class="bg-purple-500 text-white p-6 rounded-lg shadow-md">
+            <p class="text-lg font-semibold">Pomodoro Sessions</p>
+            <h3 class="text-3xl font-bold mt-2">{{ $totalSessions }}</h3>
+        </div>
+
+        <div class="bg-yellow-500 text-white p-6 rounded-lg shadow-md">
+            <p class="text-lg font-semibold">Total Cycles</p>
+            <h3 class="text-3xl font-bold mt-2">{{ $totalCycles }}</h3>
         </div>
     </div>
-</x-app-layout>
+</div>
+@endsection

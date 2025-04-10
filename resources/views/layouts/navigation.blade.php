@@ -24,7 +24,7 @@
                     </x-nav-link>
 
                     <x-nav-link :href="route('tasks.index')" :active="request()->routeIs('tasks.*')">
-                        {{ __('Task') }}
+                        {{ __('My Task') }}
                     </x-nav-link>
 
                     <x-nav-link :href="route('pomodoro')" :active="request()->routeIs('pomodoro')">
