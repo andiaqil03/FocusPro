@@ -48,6 +48,7 @@
     </div>
     </div>
 
+        <h3 class="text-xl text-gray-100 font-semibold mt-10 mb-4">Incomplete Tasks</h3>
         <table class="w-full text-left border border-gray-700 text-gray-200">
             <thead class="bg-gray-800 text-white">
                 <tr>

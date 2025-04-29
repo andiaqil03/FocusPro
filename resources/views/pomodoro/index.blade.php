@@ -143,6 +143,37 @@
         isRunning = false;
         const totalTime = (workTime / 60) * cyclesCompleted;
 
+        if (cyclesCompleted === 0) {
+            alert("No cycles completed yet. Please complete at least one cycle before ending the session.");
+            return;
+        }
+
+        fetch("{{ route('pomodoro.storeSession') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+                cycles: cyclesCompleted,
+                session_duration: totalTime
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message === "Session recorded successfully") {
+                // ✅ Update session count UI after saving
+                let sessionCount = parseInt(document.getElementById("sessionCounter").innerText) + 1;
+                document.getElementById("sessionCounter").innerText = sessionCount;
+
+                alert("Session saved successfully!");
+                location.reload();
+            } else {
+                alert("Failed to save session. Please try again.");
+            }
+        })
+        .catch(error => console.error("Error:", error));
+
         alert(`Session ended. You completed ${cyclesCompleted} cycle(s).`);
         document.getElementById("sessionCounter").innerText = parseInt(document.getElementById("sessionCounter").innerText) + 1;
         resetTimer();
