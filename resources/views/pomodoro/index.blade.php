@@ -34,7 +34,7 @@
         <div class="mt-6 text-left">
             <label for="blockedSites" class="block text-lg font-semibold text-gray-900">Blocked Websites</label>
             <textarea id="blockedSites" rows="3" class="w-full mt-2 p-3 border border-gray-400 rounded-lg text-gray-900"
-                      placeholder="e.g. youtube.com, facebook.com">{{ old('blockedSites') }}</textarea>
+                      placeholder="e.g. youtube.com, facebook.com"></textarea>
             <p class="text-sm text-gray-600 mt-1">Enter one or more sites separated by commas.</p>
         </div>
 
@@ -51,7 +51,31 @@
     </div>
 </div>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
+    const userId = "{{ Auth::user()->id }}";
+
+    // Define config first
+    const firebaseConfig = {
+        apiKey: "AIzaSyAO8Fr1OHyfbBNiK3cuC33qdNDgEymbe1I",
+        authDomain: "focuspro-fyp.firebaseapp.com",
+        databaseURL: "https://focuspro-fyp-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "focuspro-fyp",
+        storageBucket: "focuspro-fyp.firebasestorage.app",
+        messagingSenderId: "935476789668",
+        appId: "1:935476789668:web:350e24ef51aff668b68131"
+    };
+
+    // Then initialize
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    document.addEventListener("DOMContentLoaded", () => {
+        console.log("Firebase initialized successfully");
+    });
+
     let workTime = 25 * 60;
     let breakTime = 5 * 60;
     let timeLeft = workTime;
@@ -93,7 +117,21 @@
 
     function startTimer() {
         if (!isRunning) {
-            getBlockedSites(); // Save list
+            const blockedSites = getBlockedSites();
+
+            try {
+                firebase.database().ref('focusStatus/' + userId).set({
+                    isFocusing: true,
+                    blockedSites: blockedSites
+                }).then(() => {
+                    console.log("Focus status updated successfully in Firebase.");
+                }).catch(error => {
+                    console.error("Error updating focus status in Firebase:", error);
+                });
+            } catch (error) {
+                console.error("Unexpected error with Firebase:", error);
+            }
+
             isRunning = true;
             document.getElementById("startBtn").classList.add('hidden');
             document.getElementById("pauseBtn").classList.remove('hidden');
@@ -141,14 +179,28 @@
     function endSession() {
         clearInterval(timer);
         isRunning = false;
-        const totalTime = (workTime / 60) * cyclesCompleted;
 
+        try {
+            firebase.database().ref('focusStatus/' + userId).set({
+                isFocusing: false
+            }).then(() => {
+                console.log("Focus status updated successfully in Firebase.");
+            }).catch(error => {
+                console.error("Error updating focus status in Firebase:", error);
+            });
+        } catch (error) {
+            console.error("Unexpected error with Firebase:", error);
+        }
+
+        const totalTime = (workTime / 60) * cyclesCompleted;
+        
         if (cyclesCompleted === 0) {
             alert("No cycles completed yet. Please complete at least one cycle before ending the session.");
             return;
         }
 
-        fetch("{{ route('pomodoro.storeSession') }}", {
+         // Save the session to Laravel database
+         fetch("{{ route('pomodoro.storeSession') }}", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -162,7 +214,6 @@
         .then(response => response.json())
         .then(data => {
             if (data.message === "Session recorded successfully") {
-                // ✅ Update session count UI after saving
                 let sessionCount = parseInt(document.getElementById("sessionCounter").innerText) + 1;
                 document.getElementById("sessionCounter").innerText = sessionCount;
 
@@ -175,7 +226,8 @@
         .catch(error => console.error("Error:", error));
 
         alert(`Session ended. You completed ${cyclesCompleted} cycle(s).`);
-        document.getElementById("sessionCounter").innerText = parseInt(document.getElementById("sessionCounter").innerText) + 1;
+        //temporary remove this increment
+        //document.getElementById("sessionCounter").innerText = parseInt(document.getElementById("sessionCounter").innerText) + 1;
         resetTimer();
     }
 
