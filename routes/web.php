@@ -39,6 +39,7 @@ Route::middleware(['auth'])->group(function () {
 Route::patch('/tasks/{task}/complete', [TaskController::class, 'markAsCompleted'])->name('tasks.complete');
 Route::get('/tasks/export-pdf', [TaskController::class, 'exportPdf'])->name('tasks.exportPdf');
 
+Route::get('/analytics/download-pdf', [AnalyticsController::class, 'downloadPdf'])->name('analytics.download');
 
 
 require __DIR__.'/auth.php';

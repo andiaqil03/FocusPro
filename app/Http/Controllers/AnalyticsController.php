@@ -7,9 +7,8 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Models\PomodoroSession;
 use App\Models\Task;
-
 use Carbon\Carbon;
-
+use Barryvdh\DomPDF\Facade\Pdf;
 class AnalyticsController extends Controller
 {
     public function index(Request $request)
@@ -49,6 +48,40 @@ class AnalyticsController extends Controller
             'averageSessionDuration', 'dailySessions', 'dateRange',
             'totalTasks', 'completedTasks', 'completionRate'
         ));
+    }
+
+    public function downloadPdf(Request $request)
+    {
+        $user = Auth::user();
+
+        $totalSessions = PomodoroSession::where('user_id', $user->id)->count();
+        $totalCycles = PomodoroSession::where('user_id', $user->id)->sum('cycles');
+        $totalWorkTime = $totalCycles * 25;
+        $totalBreakTime = $totalCycles * 5;
+        $averageSessionDuration = PomodoroSession::where('user_id', $user->id)->avg('session_duration') ?? 0;
+
+        $totalTasks = Task::where('user_id', $user->id)->count();
+        $completedTasks = Task::where('user_id', $user->id)->where('status', 'completed')->count();
+        $completionRate = $totalTasks ? round(($completedTasks / $totalTasks) * 100, 2) : 0;
+
+        $dateRange = $request->query('date_range', '7_days');
+        $days = $dateRange == '30_days' ? 30 : 7;
+
+        $dailySessions = PomodoroSession::where('user_id', $user->id)
+            ->where('created_at', '>=', now()->subDays($days))
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as sessions')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->toArray();
+
+        $pdf = Pdf::loadView('analytics.analytics-report', compact(
+            'totalSessions', 'totalCycles', 'totalWorkTime', 'totalBreakTime',
+            'averageSessionDuration', 'dailySessions', 'totalTasks', 'completedTasks',
+            'completionRate', 'dateRange'
+        ));
+
+        return $pdf->download('focuspro_analytics_report.pdf');
     }
 
 }
