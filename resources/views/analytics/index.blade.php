@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="container mx-auto p-6">
-    <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">Productivity Analytics</h2>
+    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">Productivity Analytics</h2>
 
     <!-- Date Filter -->
     <div class="text-center mb-6">

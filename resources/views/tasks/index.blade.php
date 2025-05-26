@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container mx-auto p-6">
-    <h2 class="text-2xl font-semibold text-gray-100 mb-4">My Tasks</h2>
+    <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">My Tasks</h2>
 
     <a href="{{ route('tasks.create') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">New Task</a>
     
@@ -11,7 +11,7 @@
     <!-- Filter and Search Form -->
     <form method="GET" action="{{ route('tasks.index') }}" class="mb-6 flex flex-col sm:flex-row gap-4 items-center">
         <div class="flex items-center gap-2">
-            <label for="category" class="text-white">Category:</label>
+            <label for="category" class="text-gray-900 dark:text-white">Category:</label>
             <select name="category" id="category" onchange="this.form.submit()" class="bg-gray-700 text-white px-3 py-2 rounded">
                 <option value="">All</option>
                 @foreach($categories as $cat)
@@ -21,14 +21,14 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <label for="search" class="text-white">Search:</label>
+            <label for="search" class="text-gray-900 dark:text-white">Search:</label>
             <input type="text" name="search" id="search" value="{{ request('search') }}"
                 class="bg-gray-700 text-white px-3 py-2 rounded" placeholder="Title or Description">
             <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Apply</button>
         </div>
 
         <div class="flex items-center gap-2">
-            <label for="sort_by" class="text-white">Sort By:</label>
+            <label for="sort_by" class="text-gray-900 dark:text-white">Sort By:</label>
             <select name="sort_by" id="sort_by" onchange="this.form.submit()" class="bg-gray-700 text-white px-3 py-2 rounded">
                 <option value="">None</option>
                 <option value="due_date" {{ request('sort_by') == 'due_date' ? 'selected' : '' }}>Due Date</option>
@@ -48,7 +48,7 @@
     </div>
     </div>
 
-        <h3 class="text-xl text-gray-100 font-semibold mt-10 mb-4">Incomplete Tasks</h3>
+        <h3 class="text-xl text-gray-900 dark:text-white font-semibold mt-10 mb-4">Incomplete Tasks</h3>
         <table class="w-full text-left border border-gray-700 text-gray-200">
             <thead class="bg-gray-800 text-white">
                 <tr>
