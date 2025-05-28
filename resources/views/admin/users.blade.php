@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.admin-layout')
 
 @section('content')
 <div class="container mx-auto p-6">
-    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">User List</h2>
+    <h2 class="text-3xl font-bold text-gray-900  mb-6">User List</h2>
 
     <table class="w-full bg-white shadow-md rounded-lg overflow-hidden">
         <thead class="bg-gray-100">

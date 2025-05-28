@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.admin-layout')
 
 @section('content')
 <div class="container mx-auto p-6 max-w-md">
-    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Edit User Role</h2>
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Edit User Role</h2>
 
     <form action="{{ route('admin.users.update', $user->id) }}" method="POST" class="bg-white p-6 rounded shadow">
         @csrf

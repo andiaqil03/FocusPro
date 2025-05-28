@@ -48,8 +48,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/users/{user}/edit', [AdminDashboardController::class, 'editUser'])->name('admin.users.edit');
     Route::patch('/admin/users/{user}', [AdminDashboardController::class, 'updateUser'])->name('admin.users.update');
     Route::delete('/admin/users/{user}', [AdminDashboardController::class, 'deleteUser'])->name('admin.users.delete');
-
-
 });
 
 
