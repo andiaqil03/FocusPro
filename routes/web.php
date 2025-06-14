@@ -10,7 +10,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('welcome1');
 });
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
