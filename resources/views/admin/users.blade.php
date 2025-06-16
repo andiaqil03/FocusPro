@@ -25,10 +25,15 @@
                 <td class="px-4 py-2">{{ $user->created_at->format('Y-m-d') }}</td>
                 <td class="px-4 py-2">
                     <a href="{{ route('admin.users.edit', $user->id) }}" class="text-blue-500 hover:underline">Edit</a>
-                    <form action="{{ route('admin.users.delete', $user->id) }}" method="POST" class="inline ml-2" onsubmit="return confirm('Are you sure?');">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="text-red-500 hover:underline">Delete</button>
-                    </form>
+
+                    @if ($user->role !== 'admin')
+                        <form action="{{ route('admin.users.delete', $user->id) }}" method="POST" class="inline ml-2" onsubmit="return confirm('Are you sure?');">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="text-red-500 hover:underline">Delete</button>
+                        </form>
+                    @else
+                        <span class="text-gray-400 ml-2 italic">Cannot delete admin</span>
+                    @endif
                 </td>
             </tr>
             @endforeach

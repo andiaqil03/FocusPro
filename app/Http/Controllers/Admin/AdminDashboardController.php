@@ -45,9 +45,12 @@ class AdminDashboardController extends Controller
 
     public function deleteUser(User $user)
     {
-        $user->delete();
+        if ($user->role === 'admin') {
+            return redirect()->back()->with('error', 'Cannot delete an admin. Change the role first.');
+        }
 
-        return redirect()->route('admin.users')->with('success', 'User deleted.');
+        $user->delete();
+        return redirect()->back()->with('success', 'User deleted successfully.');
     }
 
 }
