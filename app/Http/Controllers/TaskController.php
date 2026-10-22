@@ -25,7 +25,7 @@ class TaskController extends Controller
                 ->orWhere('description', 'like', "%$search%");
             }))
             ->when($sortBy == 'due_date', fn($query) => $query->orderBy('due_date'))
-            ->when($sortBy == 'priority', fn($query) => $query->orderByRaw("FIELD(priority, 'P1', 'P2', 'P3', 'P4')"))
+            ->when($sortBy == 'priority', fn($query) => $query->orderBy('priority'))
             ->whereIn('status', ['pending', 'in_progress'])
             ->get();
 
@@ -36,7 +36,7 @@ class TaskController extends Controller
                 ->orWhere('description', 'like', "%$search%");
             }))
             ->when($sortBy == 'due_date', fn($query) => $query->orderBy('due_date'))
-            ->when($sortBy == 'priority', fn($query) => $query->orderByRaw("FIELD(priority, 'P1', 'P2', 'P3', 'P4')"))
+            ->when($sortBy == 'priority', fn($query) => $query->orderBy('priority'))
             ->where('status', 'completed')
             ->get();
 
@@ -94,7 +94,7 @@ class TaskController extends Controller
             abort(403);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category' => 'nullable|string|max:50',
@@ -103,7 +103,7 @@ class TaskController extends Controller
             'status' => 'required|in:pending,in_progress,completed',
         ]);
 
-        $task->update($request->all());
+        $task->update($validated);
 
         return redirect()->route('tasks.index')->with('success', 'Task updated successfully!');
     }
@@ -121,6 +121,10 @@ class TaskController extends Controller
 
     public function markAsCompleted(Task $task)
     {
+        if ($task->user_id !== Auth::id()) {
+            abort(403);
+        }
+
         $task->update(['status' => 'completed']);
 
         return redirect()->route('tasks.index')->with('success', 'Task marked as completed.');

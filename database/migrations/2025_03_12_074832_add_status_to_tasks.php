@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // The create_tasks_table migration already defines this column on fresh installs.
+        if (Schema::hasColumn('tasks', 'status')) {
+            return;
+        }
+
         Schema::table('tasks', function (Blueprint $table) {
             $table->enum('status', ['pending', 'in_progress', 'completed'])->default('pending')->after('priority');
         });

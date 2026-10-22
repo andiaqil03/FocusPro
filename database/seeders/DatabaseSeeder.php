@@ -19,5 +19,14 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // 'role' isn't mass-assignable, so set it directly.
+        $admin = User::factory()->make([
+            'name' => 'Admin',
+            'email' => env('ADMIN_EMAIL', 'admin@example.com'),
+            'password' => env('ADMIN_PASSWORD', 'password'),
+        ]);
+        $admin->role = 'admin';
+        $admin->save();
     }
 }
