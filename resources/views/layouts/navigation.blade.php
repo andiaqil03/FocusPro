@@ -1,110 +1,107 @@
-<nav x-data="{ open: false }" class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
-    <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
-                    </a>
-                </div>
+@php
+    $links = [
+        ['route' => 'dashboard', 'match' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'dashboard'],
+        ['route' => 'tasks.index', 'match' => 'tasks.*', 'label' => 'Tasks', 'icon' => 'list-checks'],
+        ['route' => 'pomodoro', 'match' => 'pomodoro', 'label' => 'Focus', 'icon' => 'timer'],
+        ['route' => 'analytics', 'match' => 'analytics*', 'label' => 'Analytics', 'icon' => 'chart'],
+    ];
+    $user = Auth::user();
+    $initials = collect(explode(' ', $user->name))->filter()->take(2)->map(fn ($part) => mb_substr($part, 0, 1))->implode('');
+@endphp
 
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('tasks.index')" :active="request()->routeIs('tasks.*')">
-                        {{ __('My Task') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('pomodoro')" :active="request()->routeIs('pomodoro')">
-                        {{ __('Focus Session') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('analytics')" :active="request()->routeIs('analytics')">
-                        {{ __('Analytics') }}
-                    </x-nav-link>
-                </div>
-            </div>
+<nav x-data="{ open: false }" class="sticky top-0 z-40 border-b border-ink-200/70 bg-white/80 backdrop-blur-md">
+    <div class="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6 lg:px-8">
+        <a href="{{ route('dashboard') }}" class="shrink-0 rounded-lg" aria-label="FocusPro home">
+            <x-application-logo />
+        </a>
 
-            <!-- Settings Dropdown: fixed to the right -->
-            <div class="hidden sm:flex sm:items-center ml-auto">
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
-                            <div class="flex items-center gap-2">
-                                @if (Auth::user()->profile_photo_path)
-                                    <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" alt="Profile"
-                                        class="w-8 h-8 rounded-full object-cover">
-                                @endif
-                                <span>{{ Auth::user()->name }}</span>
-                            </div>
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
+        {{-- Desktop links --}}
+        <div class="hidden items-center gap-1 md:flex">
+            @foreach ($links as $link)
+                <x-nav-link :href="route($link['route'])" :active="request()->routeIs($link['match'])">
+                    <x-icon :name="$link['icon']" class="h-4 w-4" />
+                    {{ $link['label'] }}
+                </x-nav-link>
+            @endforeach
+        </div>
 
-                    <x-slot name="content">
+        {{-- User menu --}}
+        <div class="ml-auto hidden md:block">
+            <x-dropdown align="right" width="56">
+                <x-slot name="trigger">
+                    <button type="button" class="flex cursor-pointer items-center gap-2.5 rounded-full py-1 pl-1 pr-2.5 text-sm font-medium text-ink-700 transition hover:bg-ink-100">
+                        @if ($user->profile_photo_path)
+                            <img src="{{ asset('storage/' . $user->profile_photo_path) }}" alt="" class="h-8 w-8 rounded-full object-cover">
+                        @else
+                            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold uppercase text-brand-800">{{ $initials }}</span>
+                        @endif
+                        <span class="max-w-[10rem] truncate">{{ $user->name }}</span>
+                        <x-icon name="chevron-down" class="h-4 w-4 text-ink-400" />
+                    </button>
+                </x-slot>
+
+                <x-slot name="content">
+                    <div class="border-b border-ink-100 px-4 py-3">
+                        <p class="truncate text-sm font-medium text-ink-900">{{ $user->name }}</p>
+                        <p class="truncate text-xs text-ink-500">{{ $user->email }}</p>
+                    </div>
+                    <div class="p-1">
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            <x-icon name="user" class="h-4 w-4 text-ink-400" /> Profile
                         </x-dropdown-link>
-                        <!-- Authentication -->
+                        @if ($user->role === 'admin')
+                            <x-dropdown-link :href="route('admin.dashboard')">
+                                <x-icon name="shield" class="h-4 w-4 text-ink-400" /> Admin panel
+                            </x-dropdown-link>
+                        @endif
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
+                            <button type="submit" class="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-ink-700 transition hover:bg-ink-50 hover:text-ink-900">
+                                <x-icon name="log-out" class="h-4 w-4 text-ink-400" /> Log out
+                            </button>
                         </form>
-                    </x-slot>
-                </x-dropdown>
-            </div>
-
-            <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-900 focus:text-gray-500 dark:focus:text-gray-400 transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
+                    </div>
+                </x-slot>
+            </x-dropdown>
         </div>
+
+        {{-- Mobile toggle --}}
+        <button type="button" @click="open = !open" class="icon-btn ml-auto md:hidden" :aria-expanded="open" aria-label="Toggle menu">
+            <x-icon name="menu" x-show="!open" />
+            <x-icon name="x" x-show="open" x-cloak />
+        </button>
     </div>
 
-    <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
-        </div>
-
-        <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800 dark:text-gray-200">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
-            </div>
-
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
+    {{-- Mobile menu --}}
+    <div x-show="open" x-cloak
+         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         class="border-t border-ink-200/70 bg-white md:hidden">
+        <div class="space-y-1 px-4 py-3">
+            @foreach ($links as $link)
+                <x-responsive-nav-link :href="route($link['route'])" :active="request()->routeIs($link['match'])">
+                    <x-icon :name="$link['icon']" class="h-5 w-5" />
+                    {{ $link['label'] }}
                 </x-responsive-nav-link>
-
-                <!-- Authentication -->
+            @endforeach
+        </div>
+        <div class="border-t border-ink-100 px-4 py-3">
+            <p class="px-3 text-sm font-medium text-ink-900">{{ $user->name }}</p>
+            <p class="px-3 text-xs text-ink-500">{{ $user->email }}</p>
+            <div class="mt-2 space-y-1">
+                <x-responsive-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.*')">
+                    <x-icon name="user" class="h-5 w-5" /> Profile
+                </x-responsive-nav-link>
+                @if ($user->role === 'admin')
+                    <x-responsive-nav-link :href="route('admin.dashboard')">
+                        <x-icon name="shield" class="h-5 w-5" /> Admin panel
+                    </x-responsive-nav-link>
+                @endif
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
+                    <button type="submit" class="flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-left text-base font-medium text-ink-600 transition hover:bg-ink-50 hover:text-ink-900">
+                        <x-icon name="log-out" class="h-5 w-5" /> Log out
+                    </button>
                 </form>
             </div>
         </div>

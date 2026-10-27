@@ -1,220 +1,173 @@
 @extends('layouts.app')
 
+@section('title', 'Tasks')
+
 @section('content')
-<style>
-    .task-row:hover {
-        background: rgba(59,130,246,0.07);
-        transition: background 0.2s;
-    }
-    .badge-animate {
-        animation: pulse-badge 1.5s infinite;
-    }
-    @keyframes pulse-badge {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5);}
-        50% { box-shadow: 0 0 0 6px rgba(239,68,68,0);}
-    }
-    .progress-bar {
-        background: linear-gradient(90deg, #34d399 0%, #60a5fa 100%);
-        height: 10px;
-        border-radius: 6px;
-        transition: width 0.5s;
-    }
-</style>
+@php
+    $total = $activeTasks->count() + $completedTasks->count();
+    $percent = $total ? round($completedTasks->count() / $total * 100) : 0;
+    $filtering = filled($category) || filled($search) || filled($sortBy);
+@endphp
 
-<div class="container mx-auto p-6">
-    <div class="bg-white/90 rounded-2xl shadow-2xl p-8 mb-8">
-        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-            <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-pink-500 mb-2">My Tasks</h2>
-            <a href="{{ route('tasks.create') }}" class="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-6 py-2 rounded-xl shadow-lg font-semibold transition-all duration-200 flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
-                New Task
-            </a>
+<div class="page">
+    <div class="page-header" data-reveal>
+        <div>
+            <h1 class="page-title">Tasks</h1>
+            <p class="page-subtitle">{{ $activeTasks->count() }} open · {{ $completedTasks->count() }} completed</p>
         </div>
-
-        <!-- Progress Bar -->
-        @php
-            $total = $activeTasks->count() + $completedTasks->count();
-            $completed = $completedTasks->count();
-            $percent = $total ? round(($completed / $total) * 100) : 0;
-        @endphp
-        <div class="mb-6">
-            <div class="flex justify-between items-center mb-1">
-                <span class="text-sm text-gray-700 font-semibold">Progress</span>
-                <span class="text-xs text-gray-500">{{ $percent }}% completed</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded h-2">
-                <div class="progress-bar" style="width: {{ $percent }}%"></div>
-            </div>
+        <div class="flex gap-2">
+            <x-dropdown align="right" width="56">
+                <x-slot name="trigger">
+                    <button type="button" class="btn-secondary"><x-icon name="download" class="h-4 w-4" /> Export <x-icon name="chevron-down" class="h-4 w-4 text-ink-400" /></button>
+                </x-slot>
+                <x-slot name="content">
+                    <div class="p-1">
+                        <x-dropdown-link :href="route('tasks.exportPdf', ['status' => 'all'])">
+                            <x-icon name="list-checks" class="h-4 w-4 text-ink-400" /> All tasks (PDF)
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="route('tasks.exportPdf', ['status' => 'completed'])">
+                            <x-icon name="circle-check" class="h-4 w-4 text-ink-400" /> Completed tasks (PDF)
+                        </x-dropdown-link>
+                    </div>
+                </x-slot>
+            </x-dropdown>
+            <a href="{{ route('tasks.create') }}" class="btn-primary"><x-icon name="plus" class="h-4 w-4" /> New task</a>
         </div>
+    </div>
 
-        <!-- Filter and Search Form -->
-        <form method="GET" action="{{ route('tasks.index') }}" class="mb-8 flex flex-col md:flex-row gap-4 items-center bg-gray-50 rounded-xl p-4 shadow">
-            <div class="flex items-center gap-2">
-                <label for="category" class="text-gray-900">Category:</label>
-                <select name="category" id="category" onchange="this.form.submit()" class="bg-white border border-gray-300 text-gray-900 px-3 py-2 rounded">
-                    <option value="">All</option>
-                    @foreach($categories as $cat)
-                        <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>{{ $cat }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="flex items-center gap-2">
-                <label for="search" class="text-gray-900">Search:</label>
-                <input type="text" name="search" id="search" value="{{ request('search') }}"
-                    class="bg-white border border-gray-300 text-gray-900 px-3 py-2 rounded" placeholder="Title or Description">
-                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow">Apply</button>
-            </div>
-            <div class="flex items-center gap-2">
-                <label for="sort_by" class="text-gray-900">Sort By:</label>
-                <select name="sort_by" id="sort_by" onchange="this.form.submit()" class="bg-white border border-gray-300 text-gray-900 px-3 py-2 rounded">
-                    <option value="">None</option>
-                    <option value="due_date" {{ request('sort_by') == 'due_date' ? 'selected' : '' }}>Due Date</option>
-                    <option value="priority" {{ request('sort_by') == 'priority' ? 'selected' : '' }}>Priority</option>
-                </select>
-            </div>
-        </form>
-
-        <!-- Export Buttons -->
-        <div class="mb-6 flex gap-4">
-            <a href="{{ route('tasks.exportPdf', ['status' => 'all']) }}" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-2 rounded shadow flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
-                Export All Tasks
-            </a>
-            <a href="{{ route('tasks.exportPdf', ['status' => 'completed']) }}" class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-4 py-2 rounded shadow flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
-                Export Completed Tasks
-            </a>
+    {{-- Progress --}}
+    <div class="mb-6" data-reveal="0.05">
+        <div class="mb-2 flex items-center justify-between text-sm">
+            <span class="font-medium text-ink-700">Overall progress</span>
+            <span class="tabular-nums text-ink-500">{{ $percent }}%</span>
         </div>
+        <div class="h-1.5 w-full overflow-hidden rounded-full bg-ink-200/70" role="progressbar" aria-valuenow="{{ $percent }}" aria-valuemin="0" aria-valuemax="100" aria-label="Tasks completed">
+            <div class="h-full rounded-full bg-brand-600 transition-[width] duration-700 ease-out" style="width: {{ $percent }}%"></div>
+        </div>
+    </div>
 
-        <!-- Incomplete Tasks Table -->
-        <h3 class="text-2xl text-gray-900 font-bold mt-10 mb-4">Incomplete Tasks</h3>
-        <div class="overflow-x-auto rounded-xl shadow">
-        <table class="w-full text-left border border-gray-200 text-gray-800 bg-white rounded-xl">
-            <thead class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-                <tr>
-                    <th class="py-2 px-4 border-b">Title</th>
-                    <th class="py-2 px-4 border-b">Description</th>
-                    <th class="py-2 px-4 border-b">Category</th>
-                    <th class="py-2 px-4 border-b">Due Date</th>
-                    <th class="py-2 px-4 border-b">Priority</th>
-                    <th class="py-2 px-4 border-b">Status</th>
-                    <th class="py-2 px-4 border-b">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($activeTasks as $task)
-                <tr class="border-b border-gray-100 task-row">
-                    <td class="py-2 px-4 font-semibold">{{ $task->title }}</td>
-                    <td class="py-2 px-4">{{ $task->description }}</td>
-                    <td class="py-2 px-4">{{ $task->category }}</td>
-                    @php
-                        $due = \Carbon\Carbon::parse($task->due_date);
-                        $now = \Carbon\Carbon::now();
-                        $diff = $now->diffInDays($due, false);
-                        $dueClass = $diff < 0 ? 'bg-red-600 badge-animate' :
-                                    ($diff === 0 ? 'bg-yellow-500' :
-                                    ($diff <= 3 ? 'bg-blue-500' : 'bg-gray-600'));
-                    @endphp
-                    <td class="py-2 px-4">
-                        <span class="px-2 py-1 rounded text-white {{ $dueClass }}">
-                            {{ $task->due_date }}
-                            @if($diff < 0)
-                                <span class="ml-2 text-xs font-bold text-white">Overdue</span>
-                            @elseif($diff === 0)
-                                <span class="ml-2 text-xs font-bold text-white">Today</span>
-                            @elseif($diff <= 3)
-                                <span class="ml-2 text-xs font-bold text-white">Soon</span>
-                            @endif
-                        </span>
-                    </td>
-                    <td class="py-2 px-4">
-                        <span class="px-2 py-1 text-xs font-semibold text-white rounded
-                        {{ $task->priority == 'P1' ? 'bg-red-500' : ($task->priority == 'P2' ? 'bg-yellow-500' : ($task->priority == 'P3' ? 'bg-blue-500' : 'bg-gray-500')) }}">
-                            {{ $task->priority }}
-                        </span>
-                    </td>
-                    <td class="py-2 px-4 capitalize">
-                        <span class="px-3 py-1 text-white text-sm rounded-md 
-                            {{ $task->status == 'completed' ? 'bg-green-500' : 'bg-yellow-500' }}">
-                            {{ ucfirst($task->status) }}
-                        </span>
-                    </td>
-                    <td class="py-2 px-4 flex gap-2 items-center">
-                        <a href="{{ route('tasks.edit', $task->id) }}" class="text-yellow-500 hover:text-yellow-700" title="Edit">
-                            <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536M9 13l6-6 3 3-6 6H9v-3z"/></svg>
-                        </a>
-                        @if($task->status != 'completed')
-                            <form action="{{ route('tasks.complete', $task->id) }}" method="POST" class="inline">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="text-blue-500 hover:text-blue-700 ml-2" title="Mark as Completed">
-                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-                                </button>
-                            </form>
-                        @endif
-                        <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" class="inline">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="text-red-500 hover:text-red-700 ml-2" onclick="return confirm('Are you sure?')" title="Delete">
-                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+    {{-- Filters --}}
+    <form method="GET" action="{{ route('tasks.index') }}" class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center" data-reveal="0.08">
+        <div class="relative flex-1">
+            <label for="search" class="sr-only">Search tasks</label>
+            <x-icon name="search" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+            <input type="search" name="search" id="search" value="{{ $search }}" placeholder="Search by title or description" class="input pl-10">
+        </div>
+        <div class="flex gap-3">
+            <label for="category" class="sr-only">Category</label>
+            <select name="category" id="category" onchange="this.form.submit()" class="input w-full cursor-pointer sm:w-44">
+                <option value="">All categories</option>
+                @foreach ($categories->filter() as $cat)
+                    <option value="{{ $cat }}" @selected($category == $cat)>{{ $cat }}</option>
+                @endforeach
+            </select>
+            <label for="sort_by" class="sr-only">Sort by</label>
+            <select name="sort_by" id="sort_by" onchange="this.form.submit()" class="input w-full cursor-pointer sm:w-40">
+                <option value="">Date added</option>
+                <option value="due_date" @selected($sortBy == 'due_date')>Due date</option>
+                <option value="priority" @selected($sortBy == 'priority')>Priority</option>
+            </select>
+        </div>
+        @if ($filtering)
+            <a href="{{ route('tasks.index') }}" class="btn-ghost shrink-0"><x-icon name="x" class="h-4 w-4" /> Clear</a>
+        @endif
+    </form>
+
+    {{-- Open tasks --}}
+    <section class="card overflow-hidden" data-reveal="0.1">
+        @if ($activeTasks->isEmpty())
+            <div class="flex flex-col items-center px-6 py-16 text-center">
+                <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-ink-50 text-ink-400"><x-icon name="inbox" /></span>
+                @if ($filtering)
+                    <p class="mt-3 text-sm font-medium text-ink-900">No tasks match these filters</p>
+                    <a href="{{ route('tasks.index') }}" class="btn-secondary mt-4">Clear filters</a>
+                @else
+                    <p class="mt-3 text-sm font-medium text-ink-900">No open tasks</p>
+                    <p class="mt-1 text-sm text-ink-500">Create one to plan your next focus session.</p>
+                    <a href="{{ route('tasks.create') }}" class="btn-primary mt-4"><x-icon name="plus" class="h-4 w-4" /> New task</a>
+                @endif
+            </div>
+        @else
+            <ul data-stagger>
+                @foreach ($activeTasks as $task)
+                    <li class="group flex items-start gap-3 border-b border-ink-100 px-4 py-4 transition last:border-b-0 hover:bg-ink-50/50 sm:items-center sm:gap-4 sm:px-6">
+                        <form action="{{ route('tasks.complete', $task) }}" method="POST" class="shrink-0">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="group/check flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-2 border-ink-300 text-transparent transition hover:border-brand-600 hover:bg-brand-50 hover:text-brand-700" aria-label="Mark “{{ $task->title }}” as completed" title="Mark as completed">
+                                <x-icon name="check" class="h-3.5 w-3.5" />
                             </button>
                         </form>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-        </div>
 
-        @if($completedTasks->count())
-            <h3 class="text-2xl text-green-700 font-bold mt-10 mb-4">Completed Tasks</h3>
-            <div class="overflow-x-auto rounded-xl shadow">
-            <table class="w-full text-left border border-gray-200 text-gray-800 bg-white rounded-xl">
-                <thead class="bg-gradient-to-r from-green-600 to-blue-600 text-white">
-                    <tr>
-                        <th class="py-2 px-4 border-b">Title</th>
-                        <th class="py-2 px-4 border-b">Description</th>
-                        <th class="py-2 px-4 border-b">Category</th>
-                        <th class="py-2 px-4 border-b">Due Date</th>
-                        <th class="py-2 px-4 border-b">Priority</th>
-                        <th class="py-2 px-4 border-b">Status</th>
-                        <th class="py-2 px-4 border-b">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($completedTasks as $task)
-                    <tr class="border-b border-gray-100 task-row">
-                        <td class="py-2 px-4 font-semibold">{{ $task->title }}</td>
-                        <td class="py-2 px-4">{{ $task->description }}</td>
-                        <td class="py-2 px-4">{{ $task->category }}</td>
-                        <td class="py-2 px-4">{{ $task->due_date }}</td>
-                        <td class="py-2 px-4">
-                            <span class="px-2 py-1 text-xs font-semibold text-white rounded
-                            {{ $task->priority == 'P1' ? 'bg-red-500' : ($task->priority == 'P2' ? 'bg-yellow-500' : ($task->priority == 'P3' ? 'bg-blue-500' : 'bg-gray-500')) }}">
-                                {{ $task->priority }}
-                            </span>
-                        </td>
-                        <td class="py-2 px-4 capitalize">
-                            <span class="px-3 py-1 text-white text-sm rounded-md bg-green-500">
-                                {{ ucfirst($task->status) }}
-                            </span>
-                        </td>
-                        <td class="py-2 px-4 flex gap-2 items-center">
-                            <a href="{{ route('tasks.edit', $task->id) }}" class="text-yellow-500 hover:text-yellow-700" title="Edit">
-                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536M9 13l6-6 3 3-6 6H9v-3z"/></svg>
-                            </a>
-                            <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" class="inline">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-medium text-ink-900">{{ $task->title }}</p>
+                                    @if ($task->description)
+                                        <p class="mt-0.5 line-clamp-1 text-sm text-ink-500">{{ $task->description }}</p>
+                                    @endif
+                                </div>
+                                <div class="flex shrink-0 flex-wrap items-center gap-1.5">
+                                    @if ($task->status === 'in_progress')
+                                        <span class="chip-brand">In progress</span>
+                                    @endif
+                                    @if ($task->category)
+                                        <span class="chip-neutral"><x-icon name="tag" class="h-3 w-3" /> {{ $task->category }}</span>
+                                    @endif
+                                    <x-due-chip :date="$task->due_date" />
+                                    <x-priority-chip :priority="$task->priority" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex shrink-0 items-center sm:opacity-60 sm:transition sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                            <a href="{{ route('tasks.edit', $task) }}" class="icon-btn" aria-label="Edit “{{ $task->title }}”" title="Edit"><x-icon name="pencil" class="h-4 w-4" /></a>
+                            <form action="{{ route('tasks.destroy', $task) }}" method="POST" onsubmit="return confirm('Delete this task? This cannot be undone.')">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="text-red-500 hover:text-red-700 ml-2" onclick="return confirm('Are you sure?')" title="Delete">
-                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
-                                </button>
+                                <button type="submit" class="icon-btn hover:bg-red-50 hover:text-red-600" aria-label="Delete “{{ $task->title }}”" title="Delete"><x-icon name="trash" class="h-4 w-4" /></button>
                             </form>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            </div>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
         @endif
-    </div>
+    </section>
+
+    {{-- Completed tasks --}}
+    @if ($completedTasks->isNotEmpty())
+        <section x-data="{ open: false }" class="mt-6" data-reveal="0.12">
+            <button type="button" @click="open = !open" :aria-expanded="open" class="mb-3 flex cursor-pointer items-center gap-2 rounded-lg px-1 text-sm font-medium text-ink-600 transition hover:text-ink-900">
+                <x-icon name="chevron-down" class="h-4 w-4 transition-transform duration-200" ::class="open ? '' : '-rotate-90'" />
+                Completed <span class="chip-neutral">{{ $completedTasks->count() }}</span>
+            </button>
+
+            <div x-show="open" x-cloak x-collapse.duration.250ms class="card overflow-hidden">
+                <ul>
+                    @foreach ($completedTasks as $task)
+                        <li class="group flex items-center gap-3 border-b border-ink-100 px-4 py-3.5 last:border-b-0 sm:gap-4 sm:px-6">
+                            <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white" aria-hidden="true">
+                                <x-icon name="check" class="h-3.5 w-3.5" />
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate text-sm text-ink-500 line-through decoration-ink-300">{{ $task->title }}</p>
+                            </div>
+                            <div class="hidden shrink-0 items-center gap-1.5 sm:flex">
+                                @if ($task->category)
+                                    <span class="chip-neutral">{{ $task->category }}</span>
+                                @endif
+                                <x-priority-chip :priority="$task->priority" />
+                            </div>
+                            <div class="flex shrink-0 items-center">
+                                <a href="{{ route('tasks.edit', $task) }}" class="icon-btn" aria-label="Edit “{{ $task->title }}”" title="Edit"><x-icon name="pencil" class="h-4 w-4" /></a>
+                                <form action="{{ route('tasks.destroy', $task) }}" method="POST" onsubmit="return confirm('Delete this task? This cannot be undone.')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="icon-btn hover:bg-red-50 hover:text-red-600" aria-label="Delete “{{ $task->title }}”" title="Delete"><x-icon name="trash" class="h-4 w-4" /></button>
+                                </form>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        </section>
+    @endif
 </div>
 @endsection

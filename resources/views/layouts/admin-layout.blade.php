@@ -1,53 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    <meta charset="UTF-8">
-    <title>Admin Panel - @yield('title', 'Dashboard')</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    @vite(['resources/css/app.css', 'resources/js/app.js']) {{-- Adjust this if you're using Laravel Mix --}}
+    @include('layouts.partials.head', ['title' => 'Admin · ' . trim($__env->yieldContent('title', 'Dashboard'))])
 </head>
-<body class="bg-gray-100 font-sans antialiased">
+<body class="min-h-screen font-sans">
+@php
+    $adminLinks = [
+        ['route' => 'admin.dashboard', 'match' => 'admin.dashboard', 'label' => 'Overview', 'icon' => 'dashboard'],
+        ['route' => 'admin.users', 'match' => 'admin.users*', 'label' => 'Users', 'icon' => 'users'],
+    ];
+@endphp
 
-    @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mt-4 text-center">
-            {{ session('success') }}
+<div x-data="{ open: false }" class="lg:flex">
+    {{-- Sidebar --}}
+    <aside class="fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col border-r border-ink-200/70 bg-white transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0"
+           :class="open && 'translate-x-0'">
+        <div class="flex h-16 items-center gap-2 px-5">
+            <x-application-logo />
+            <span class="chip-neutral ml-1">Admin</span>
         </div>
-    @endif
 
-    @if(session('error'))
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-4 text-center">
-            {{ session('error') }}
-        </div>
-    @endif
+        <nav class="flex-1 space-y-1 px-3 py-4">
+            @foreach ($adminLinks as $link)
+                <x-responsive-nav-link :href="route($link['route'])" :active="request()->routeIs($link['match'])" class="!text-sm">
+                    <x-icon :name="$link['icon']" class="h-4 w-4" /> {{ $link['label'] }}
+                </x-responsive-nav-link>
+            @endforeach
+        </nav>
 
-
-    <div class="flex h-screen">
-
-        <!-- Sidebar -->
-        <aside class="w-64 bg-blue-800 text-white flex flex-col">
-            <div class="p-4 font-bold text-xl border-b border-blue-700">
-                Admin Panel
-            </div>
-            <nav class="flex-1 p-4 space-y-2">
-                <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded hover:bg-blue-700">Dashboard</a>
-                <a href="{{ route('admin.users') }}" class="block px-3 py-2 rounded hover:bg-blue-700">Manage Users</a>
-                {{-- Add more admin links here --}}
-            </nav>
-            <form method="POST" action="{{ route('logout') }}" class="p-4">
+        <div class="space-y-1 border-t border-ink-100 p-3">
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-600 transition hover:bg-ink-50 hover:text-ink-900">
+                <x-icon name="arrow-right" class="h-4 w-4 rotate-180" /> Back to app
+            </a>
+            <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-2 rounded">
-                    Logout
+                <button type="submit" class="flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-ink-600 transition hover:bg-ink-50 hover:text-ink-900">
+                    <x-icon name="log-out" class="h-4 w-4" /> Log out
                 </button>
             </form>
-        </aside>
+        </div>
+    </aside>
 
-        <!-- Main Content -->
-        <main class="flex-1 p-6 overflow-y-auto">
-            <h1 class="text-2xl font-semibold mb-4">@yield('title', 'Admin Dashboard')</h1>
+    {{-- Mobile backdrop --}}
+    <div x-show="open" x-cloak x-transition.opacity @click="open = false" class="fixed inset-0 z-40 bg-ink-900/30 lg:hidden"></div>
+
+    <div class="min-w-0 flex-1">
+        <header class="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-ink-200/70 bg-white/80 px-4 backdrop-blur-md lg:hidden">
+            <button type="button" @click="open = true" class="icon-btn" aria-label="Open menu"><x-icon name="menu" /></button>
+            <x-application-logo />
+        </header>
+
+        <main class="page">
             @yield('content')
         </main>
-
     </div>
+</div>
 
+@include('layouts.partials.flash')
 </body>
 </html>

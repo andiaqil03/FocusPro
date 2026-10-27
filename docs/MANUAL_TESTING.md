@@ -34,6 +34,17 @@ The admin's email and password come from `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `.e
 
 Tip: use a normal window for one account and a private/incognito window for the other, so you can be logged in as both at once.
 
+### Demo history for analytics
+
+To give an existing account ~3 months of realistic tasks and focus sessions (useful for screenshots and demos):
+
+```bash
+php artisan db:seed --class=DemoActivitySeeder
+```
+
+It targets `andi@gmail.com` by default; set `DEMO_USER_EMAIL=...` to pick another account. Re-running it replaces the
+data it created earlier (tasks with its titles, and that user's focus sessions from before today) and leaves other tasks alone.
+
 ## 2. Checklist
 
 ### Auth

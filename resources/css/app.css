@@ -2,14 +2,148 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Priority Colors */
-.priority-p1 { background-color: #ffcccc; }  /* Red for highest priority */
-.priority-p2 { background-color: #ffeb99; }  /* Yellow */
-.priority-p3 { background-color: #cce5ff; }  /* Light Blue */
-.priority-p4 { background-color: #e6e6e6; }  /* Grey for lowest priority */
+@layer base {
+    html {
+        @apply bg-ink-50 text-ink-900 antialiased;
+        -webkit-tap-highlight-color: transparent;
+    }
 
-/* Badge Styling */
-.badge-p1 { background-color: #ff4d4d; color: white; }  /* Red */
-.badge-p2 { background-color: #ffcc00; color: black; }  /* Yellow */
-.badge-p3 { background-color: #4da6ff; color: white; }  /* Blue */
-.badge-p4 { background-color: #808080; color: white; }  /* Grey */
+    ::selection {
+        @apply bg-brand-100 text-brand-900;
+    }
+
+    :focus-visible {
+        @apply outline-none ring-2 ring-brand-600 ring-offset-2 ring-offset-white;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+/* Elements animated by resources/js/motion.js start hidden only once JS is confirmed running
+   (the "js" class is set in the <head>) and the user hasn't asked for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+    html.js [data-reveal],
+    html.js [data-stagger] > * {
+        opacity: 0;
+    }
+}
+
+@layer components {
+    /* Layout */
+    .page {
+        @apply mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10;
+    }
+
+    .page-header {
+        @apply mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between;
+    }
+
+    .page-title {
+        @apply text-2xl font-semibold tracking-tight text-ink-900 sm:text-3xl;
+    }
+
+    .page-subtitle {
+        @apply mt-1 text-sm text-ink-500;
+    }
+
+    .section-title {
+        @apply text-base font-semibold text-ink-900;
+    }
+
+    .eyebrow {
+        @apply text-xs font-semibold uppercase tracking-wider text-brand-700;
+    }
+
+    /* Surfaces */
+    .card {
+        @apply rounded-2xl border border-ink-200/70 bg-white shadow-card;
+    }
+
+    .card-body {
+        @apply p-5 sm:p-6;
+    }
+
+    .card-hover {
+        @apply transition duration-200 ease-out hover:-translate-y-0.5 hover:border-ink-300/80 hover:shadow-lift;
+    }
+
+    /* Buttons */
+    .btn {
+        @apply inline-flex min-h-[2.5rem] cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 text-sm font-semibold transition duration-200 ease-out active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    .btn-primary {
+        @apply btn bg-brand-700 text-white shadow-sm hover:bg-brand-800;
+    }
+
+    .btn-secondary {
+        @apply btn border border-ink-200 bg-white text-ink-800 shadow-sm hover:border-ink-300 hover:bg-ink-50;
+    }
+
+    .btn-ghost {
+        @apply btn text-ink-600 hover:bg-ink-100 hover:text-ink-900;
+    }
+
+    .btn-danger {
+        @apply btn bg-red-600 text-white shadow-sm hover:bg-red-700;
+    }
+
+    .btn-lg {
+        @apply min-h-[3rem] px-6 text-base;
+    }
+
+    .icon-btn {
+        @apply inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-ink-500 transition duration-200 hover:bg-ink-100 hover:text-ink-900 active:scale-95;
+    }
+
+    /* Forms */
+    .label {
+        @apply mb-1.5 block text-sm font-medium text-ink-700;
+    }
+
+    .input {
+        @apply block w-full rounded-xl border-ink-200 bg-white px-3.5 py-2.5 text-sm text-ink-900 shadow-sm transition placeholder:text-ink-400 focus:border-brand-600 focus:ring-4 focus:ring-brand-600/10;
+    }
+
+    .hint {
+        @apply mt-1.5 text-xs text-ink-500;
+    }
+
+    .link {
+        @apply font-medium text-brand-700 underline-offset-4 transition hover:text-brand-800 hover:underline;
+    }
+
+    /* Chips */
+    .chip {
+        @apply inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset;
+    }
+
+    .chip-neutral { @apply chip bg-ink-50 text-ink-600 ring-ink-200; }
+    .chip-brand   { @apply chip bg-brand-50 text-brand-800 ring-brand-200; }
+    .chip-red     { @apply chip bg-red-50 text-red-700 ring-red-200; }
+    .chip-amber   { @apply chip bg-amber-50 text-amber-800 ring-amber-200; }
+    .chip-blue    { @apply chip bg-sky-50 text-sky-800 ring-sky-200; }
+
+    /* Tables */
+    .table {
+        @apply w-full text-left text-sm;
+    }
+
+    .table thead th {
+        @apply whitespace-nowrap border-b border-ink-200 px-5 py-3 text-xs font-medium uppercase tracking-wide text-ink-500;
+    }
+
+    .table tbody td {
+        @apply border-b border-ink-100 px-5 py-3.5 text-ink-700;
+    }
+
+    .table tbody tr:last-child td {
+        @apply border-b-0;
+    }
+
+    .table tbody tr {
+        @apply transition-colors hover:bg-ink-50/60;
+    }
+}
