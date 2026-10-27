@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Focus Blocker",
+  "version": "2.0",
+  "description": "Block distracting websites during focus sessions, synced with Firebase.",
+  "permissions": ["tabs", "storage"],
+  "host_permissions": [
+    "<all_urls>",
+    "https://*.firebaseio.com/",
+    "https://*.firebasedatabase.app/",
+    "https://www.googleapis.com/"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["blocked.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
