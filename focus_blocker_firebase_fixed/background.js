@@ -1,62 +1,129 @@
 // background.js
+//
+// MV3 service workers are stopped whenever Chrome feels like it, so nothing here relies on
+// in-memory state. Blocking is done with declarativeNetRequest rules, which Chrome keeps
+// enforcing while the worker sleeps; the worker only wakes up to refresh those rules.
 
-try {
-    importScripts('./firebase-sdk/firebase-app.js');
-    importScripts('./firebase-sdk/firebase-database.js');
+const DATABASE_URL = "https://focuspro-fyp-default-rtdb.asia-southeast1.firebasedatabase.app";
+const REFRESH_ALARM = "refresh-focus-status";
+const BLOCKED_PAGE = "/blocked.html";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAO8Fr1OHyfbBNiK3cuC33qdNDgEymbe1I", // IMPORTANT: Keep your actual API key secret
-        authDomain: "focuspro-fyp.firebaseapp.com",
-        databaseURL: "https://focuspro-fyp-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "focuspro-fyp",
-        storageBucket: "focuspro-fyp.firebasestorage.app", // Corrected: "focuspro-fyp.appspot.com" or "focuspro-fyp.firebasestorage.app" - check your Firebase console
-        messagingSenderId: "935476789668",
-        appId: "1:935476789668:web:350e24ef51aff668b68131"
+// "https://www.YouTube.com/watch?v=1" -> "youtube.com"
+function normalizeSite(site) {
+    return String(site)
+        .trim()
+        .toLowerCase()
+        .replace(/^[a-z]+:\/\//, "")
+        .replace(/^www\./, "")
+        .split(/[/?#:]/)[0];
+}
+
+function isBlockedUrl(url, sites) {
+    let host;
+    try {
+        host = new URL(url).hostname.replace(/^www\./, "");
+    } catch {
+        return false;
+    }
+    return sites.some(site => host === site || host.endsWith("." + site));
+}
+
+async function fetchFocusStatus(userId) {
+    const response = await fetch(`${DATABASE_URL}/focusStatus/${encodeURIComponent(userId)}.json`, {
+        cache: "no-store",
+    });
+    if (!response.ok) {
+        throw new Error(`Firebase returned HTTP ${response.status}`);
+    }
+    const data = (await response.json()) || {};
+    const sites = Array.isArray(data.blockedSites) ? data.blockedSites : [];
+
+    return {
+        isFocusing: data.isFocusing === true,
+        blockedSites: [...new Set(sites.map(normalizeSite).filter(Boolean))],
     };
+}
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+async function applyRules({ isFocusing, blockedSites }) {
+    const existing = await chrome.declarativeNetRequest.getDynamicRules();
+    const sites = isFocusing ? blockedSites : [];
 
-    const userId = "1"; // Replace with your actual Laravel user ID
-
-    let blockedSites = [];
-    let isFocusing = false;
-
-    // Ensure DB path is correct and user has permissions
-    const userFocusStatusRef = db.ref('focusStatus/' + userId);
-
-    userFocusStatusRef.on('value', snapshot => {
-        const data = snapshot.val();
-        if (data) {
-            isFocusing = data.isFocusing || false;
-            // Ensure blockedSites is always an array, even if null/undefined in Firebase
-            blockedSites = Array.isArray(data.blockedSites) ? data.blockedSites : [];
-            console.log("Updated from Firebase:", isFocusing, "Blocked sites:", blockedSites);
-        } else {
-            // Handle case where no data exists for the user yet
-            isFocusing = false;
-            blockedSites = [];
-            console.log("No data found in Firebase for user. Focusing set to false, no blocked sites.");
-        }
-    }, errorObject => {
-        console.error("Firebase read failed: " + errorObject.name + " : " + errorObject.message);
-        // Optionally, implement retry logic or notify the user
+    await chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: existing.map(rule => rule.id),
+        addRules: sites.map((site, index) => ({
+            id: index + 1,
+            priority: 1,
+            action: { type: "redirect", redirect: { extensionPath: BLOCKED_PAGE } },
+            // requestDomains also matches subdomains, e.g. m.youtube.com
+            condition: { requestDomains: [site], resourceTypes: ["main_frame"] },
+        })),
     });
 
-    chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-        if (isFocusing && changeInfo.url) {
-            // Ensure blockedSites is an array before calling forEach
-            if (Array.isArray(blockedSites)) {
-                blockedSites.forEach(site => {
-                    // Ensure site is a string and not empty before using includes
-                    if (typeof site === 'string' && site.trim() !== '' && changeInfo.url.includes(site)) {
-                        chrome.tabs.update(tabId, { url: chrome.runtime.getURL("blocked.html") });
-                    }
-                });
+    // Rules only catch new page loads, so redirect tabs that were already open.
+    if (sites.length) {
+        const tabs = await chrome.tabs.query({});
+        for (const tab of tabs) {
+            if (tab.url && isBlockedUrl(tab.url, sites)) {
+                chrome.tabs.update(tab.id, { url: chrome.runtime.getURL(BLOCKED_PAGE) });
             }
         }
-    });
-
-} catch (e) {
-    console.error("Error loading or initializing Firebase in service worker:", e);
+    }
 }
+
+async function refresh() {
+    const { userId } = await chrome.storage.local.get("userId");
+    if (!userId) {
+        await chrome.storage.local.set({ status: { isFocusing: false, blockedSites: [], error: "no-user" } });
+        await applyRules({ isFocusing: false, blockedSites: [] });
+        return;
+    }
+
+    try {
+        const status = await fetchFocusStatus(userId);
+        await chrome.storage.local.set({ status: { ...status, checkedAt: Date.now() } });
+        await applyRules(status);
+    } catch (error) {
+        // Keep the last known rules when offline instead of silently unblocking.
+        console.error("Could not refresh focus status:", error);
+        const { status } = await chrome.storage.local.get("status");
+        await chrome.storage.local.set({ status: { ...status, error: String(error.message || error) } });
+    }
+}
+
+function ensureAlarm() {
+    chrome.alarms.create(REFRESH_ALARM, { periodInMinutes: 0.5 });
+}
+
+chrome.runtime.onInstalled.addListener(() => {
+    ensureAlarm();
+    refresh();
+});
+
+chrome.runtime.onStartup.addListener(() => {
+    ensureAlarm();
+    refresh();
+});
+
+chrome.alarms.onAlarm.addListener(alarm => {
+    if (alarm.name === REFRESH_ALARM) {
+        refresh();
+    }
+});
+
+// Messages from focuspro-bridge.js (the FocusPro tab) and popup.html.
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    const setUserAndRefresh = userId => {
+        chrome.storage.local.set({ userId }).then(refresh).then(() => sendResponse({ ok: true }));
+        return true;
+    };
+
+    if (message?.type === "focuspro-user" || message?.type === "focuspro-status-changed") {
+        const userId = String(message.userId || "").trim();
+        return /^\d+$/.test(userId) ? setUserAndRefresh(userId) : undefined;
+    }
+
+    if (message?.type === "popup-refresh") {
+        refresh().then(() => sendResponse({ ok: true }));
+        return true;
+    }
+});

@@ -1,15 +1,25 @@
-
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
   <title>Focus Blocker</title>
   <style>
-    body { font-family: sans-serif; padding: 10px; }
-    h1 { font-size: 16px; margin-bottom: 10px; }
+    body { font-family: sans-serif; padding: 12px; width: 260px; margin: 0; }
+    h1 { font-size: 16px; margin: 0 0 10px; }
+    p { margin: 6px 0; font-size: 13px; }
+    .on { color: #c62828; font-weight: bold; }
+    .off { color: #2e7d32; font-weight: bold; }
+    .muted { color: #666; font-size: 12px; }
+    button { margin-top: 8px; padding: 6px 10px; cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>Focus Blocker Extension Active</h1>
-  <p>This extension listens to your Pomodoro focus status.</p>
+  <h1>Focus Blocker</h1>
+  <p>User ID: <strong id="user">-</strong></p>
+  <p>Status: <span id="status">-</span></p>
+  <p>Blocking: <span id="sites">-</span></p>
+  <p class="muted" id="note"></p>
+  <button id="refresh">Refresh now</button>
+  <script src="popup.js"></script>
 </body>
 </html>

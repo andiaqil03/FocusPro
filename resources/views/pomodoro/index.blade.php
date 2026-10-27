@@ -72,8 +72,15 @@
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // Picked up by the Focus Blocker extension's content script (focuspro-bridge.js), which links
+    // the extension to this user and makes it re-read Firebase right away.
+    function notifyExtension(type) {
+        window.postMessage({ source: "focuspro", type, userId }, window.location.origin);
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
         console.log("Firebase initialized successfully");
+        notifyExtension("user");
     });
 
     let workTime = 25 * 60;
@@ -125,6 +132,7 @@
                     blockedSites: blockedSites
                 }).then(() => {
                     console.log("Focus status updated successfully in Firebase.");
+                    notifyExtension("status-changed");
                 }).catch(error => {
                     console.error("Error updating focus status in Firebase:", error);
                 });
@@ -185,6 +193,7 @@
                 isFocusing: false
             }).then(() => {
                 console.log("Focus status updated successfully in Firebase.");
+                notifyExtension("status-changed");
             }).catch(error => {
                 console.error("Error updating focus status in Firebase:", error);
             });
