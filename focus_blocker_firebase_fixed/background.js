@@ -64,11 +64,46 @@ async function applyRules({ isFocusing, blockedSites }) {
         const tabs = await chrome.tabs.query({});
         for (const tab of tabs) {
             if (tab.url && isBlockedUrl(tab.url, sites)) {
+                await rememberBlockedUrl(tab.id, tab.url);
                 chrome.tabs.update(tab.id, { url: chrome.runtime.getURL(BLOCKED_PAGE) });
             }
         }
     }
 }
+
+// The redirect rule drops the original URL, so note it per tab for blocked.html to show.
+function rememberBlockedUrl(tabId, url) {
+    return chrome.storage.session.set({ [`blocked:${tabId}`]: url });
+}
+
+function localDate() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+async function countBlockedAttempt() {
+    const { blockedToday } = await chrome.storage.local.get("blockedToday");
+    const today = localDate();
+    const count = blockedToday?.date === today ? blockedToday.count + 1 : 1;
+    await chrome.storage.local.set({ blockedToday: { date: today, count } });
+}
+
+// Fires before the request, i.e. before the declarativeNetRequest redirect happens.
+chrome.webNavigation.onBeforeNavigate.addListener(async ({ tabId, url, frameId }) => {
+    if (frameId !== 0) {
+        return;
+    }
+    const { status } = await chrome.storage.local.get("status");
+    if (!status?.isFocusing || !isBlockedUrl(url, status.blockedSites || [])) {
+        return;
+    }
+    await rememberBlockedUrl(tabId, url);
+    await countBlockedAttempt();
+});
+
+chrome.tabs.onRemoved.addListener(tabId => {
+    chrome.storage.session.remove(`blocked:${tabId}`);
+});
 
 async function refresh() {
     const { userId } = await chrome.storage.local.get("userId");
@@ -118,6 +153,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     };
 
     if (message?.type === "focuspro-user" || message?.type === "focuspro-status-changed") {
+        // Remember where the FocusPro app lives so blocked.html can link back to it.
+        if (sender.url) {
+            chrome.storage.local.set({ appOrigin: new URL(sender.url).origin });
+        }
         const userId = String(message.userId || "").trim();
         return /^\d+$/.test(userId) ? setUserAndRefresh(userId) : undefined;
     }

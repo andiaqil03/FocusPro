@@ -28,13 +28,24 @@ function reveal() {
         }, { amount: 0.1 });
     });
 
+    // The markup already carries the final offset. Drive the value through onUpdate (the same way
+    // countUp does) rather than animating the SVG property directly, which left the inline start
+    // value in place, and snap to the final offset if the animation hasn't finished in time.
     document.querySelectorAll('[data-progress-ring]').forEach(ring => {
         const full = parseFloat(ring.getAttribute('stroke-dasharray'));
         const offset = parseFloat(ring.dataset.offset);
+        if (!Number.isFinite(full) || !Number.isFinite(offset)) {
+            return;
+        }
+        let started = false;
+        const settle = () => (ring.style.strokeDashoffset = offset);
         ring.style.strokeDashoffset = full;
         inView(ring, () => {
-            animate(ring, { strokeDashoffset: [full, offset] }, { duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.15 });
+            started = true;
+            animate(full, offset, { duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.15, onUpdate: v => (ring.style.strokeDashoffset = v) }).then(settle, settle);
+            setTimeout(settle, 2000);
         });
+        setTimeout(() => started || settle(), 4000);
     });
 }
 
@@ -65,7 +76,8 @@ const toastIcons = {
 };
 const toastTone = { success: 'text-brand-600', error: 'text-red-600', info: 'text-ink-500' };
 
-function toast(message, type = 'success', { duration = 3500 } = {}) {
+// Pass { action: { label, onClick } } to add a button such as Undo.
+function toast(message, type = 'success', { duration = 3500, action = null } = {}) {
     let root = document.getElementById('toast-root');
     if (!root) {
         root = document.createElement('div');
@@ -80,6 +92,18 @@ function toast(message, type = 'success', { duration = 3500 } = {}) {
     el.className = 'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm text-ink-800 shadow-lift';
     el.innerHTML = `<svg class="mt-0.5 h-5 w-5 shrink-0 ${toastTone[type] || toastTone.info}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${toastIcons[type] || toastIcons.info}</svg><div class="min-w-0 flex-1"></div>`;
     el.querySelector('div').textContent = message;
+    if (action) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = '-my-1 -mr-1 shrink-0 cursor-pointer rounded-lg px-2 py-1 text-sm font-semibold text-brand-700 transition hover:bg-brand-50';
+        button.textContent = action.label;
+        button.addEventListener('click', event => {
+            event.stopPropagation();
+            button.disabled = true;
+            action.onClick();
+        });
+        el.appendChild(button);
+    }
     root.appendChild(el);
 
     if (!reducedMotion) {
@@ -90,7 +114,14 @@ function toast(message, type = 'success', { duration = 3500 } = {}) {
         const done = () => el.remove();
         reducedMotion ? done() : animate(el, { opacity: 0, y: -8 }, { duration: 0.18, ease: 'easeIn' }).then(done);
     };
-    setTimeout(close, duration);
+    // Hovering or focusing the toast holds it open, so there's time to reach an Undo button.
+    let timeout = setTimeout(close, duration);
+    const hold = () => clearTimeout(timeout);
+    const release = () => (timeout = setTimeout(close, 2000));
+    el.addEventListener('mouseenter', hold);
+    el.addEventListener('mouseleave', release);
+    el.addEventListener('focusin', hold);
+    el.addEventListener('focusout', release);
     el.addEventListener('click', close);
 }
 

@@ -21,6 +21,12 @@
                 <span id="modeLabel">Focus</span>
             </span>
 
+            @if ($task)
+                <p class="mt-4 max-w-full truncate text-center text-sm text-ink-500">
+                    Focusing on <a href="{{ route('tasks.edit', $task) }}" class="font-medium text-ink-900 underline decoration-ink-300 underline-offset-4 hover:decoration-ink-900">{{ $task->title }}</a>
+                </p>
+            @endif
+
             <div class="relative my-8 h-64 w-64 sm:h-72 sm:w-72">
                 <svg viewBox="0 0 260 260" class="h-full w-full -rotate-90" aria-hidden="true">
                     <circle cx="130" cy="130" r="120" fill="none" class="stroke-ink-100" stroke-width="10" />
@@ -319,5 +325,10 @@
 
     updateDisplay();
     updateMode();
+
+    @if ($autoStart)
+        // Arrived from "Start 25 min" on the dashboard: begin right away.
+        document.addEventListener("DOMContentLoaded", startTimer);
+    @endif
 </script>
 @endsection

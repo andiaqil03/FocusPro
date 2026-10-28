@@ -38,6 +38,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/analytics/download-pdf', [AnalyticsController::class, 'downloadPdf'])->name('analytics.download');
 
     Route::patch('/tasks/{task}/complete', [TaskController::class, 'markAsCompleted'])->name('tasks.complete');
+    Route::patch('/tasks/{task}/reopen', [TaskController::class, 'reopen'])->name('tasks.reopen');
     Route::get('/tasks/export-pdf', [TaskController::class, 'exportPdf'])->name('tasks.exportPdf');
 });
 

@@ -8,7 +8,7 @@
         </span>
     </div>
     <p class="mt-3 text-3xl font-semibold tracking-tight text-ink-900 tabular-nums">
-        <span data-count="{{ $value }}" data-decimals="{{ $decimals }}">{{ number_format($value, $decimals) }}</span>@if ($suffix)<span class="ml-0.5 text-lg font-medium text-ink-400">{{ $suffix }}</span>@endif
+        <span class="sr-only">{{ number_format($value, $decimals) }}{{ $suffix }}</span><span aria-hidden="true"><span data-count="{{ $value }}" data-decimals="{{ $decimals }}">{{ number_format($value, $decimals) }}</span>@if ($suffix)<span class="ml-0.5 text-lg font-medium text-ink-400">{{ $suffix }}</span>@endif</span>
     </p>
     @isset($hint)
         <p class="mt-1 text-xs text-ink-500">{{ $hint }}</p>

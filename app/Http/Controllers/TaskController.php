@@ -125,9 +125,30 @@ class TaskController extends Controller
             abort(403);
         }
 
+        $previous = $task->status;
         $task->update(['status' => 'completed']);
 
-        return redirect()->route('tasks.index')->with('success', 'Task marked as completed.');
+        // Go back to whichever page the task was ticked on (tasks list or dashboard), with an undo.
+        return redirect()->back(fallback: route('tasks.index'))
+            ->with('success', 'Completed “' . $task->title . '”')
+            ->with('undo', [
+                'url' => route('tasks.reopen', $task),
+                'status' => in_array($previous, ['pending', 'in_progress']) ? $previous : 'pending',
+            ]);
+    }
+
+    // Undo a completion: put the task back to the status it had before
+    public function reopen(Request $request, Task $task)
+    {
+        if ($task->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $request->validate(['status' => 'required|in:pending,in_progress']);
+
+        $task->update(['status' => $request->status]);
+
+        return redirect()->back(fallback: route('tasks.index'))->with('success', 'Task reopened.');
     }
 
     //Export tasks to PDF

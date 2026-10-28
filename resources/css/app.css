@@ -90,6 +90,17 @@
         @apply btn bg-red-600 text-white shadow-sm hover:bg-red-700;
     }
 
+    /* Touch screens get the full 44px target */
+    @media (pointer: coarse) {
+        .btn,
+        .btn-primary,
+        .btn-secondary,
+        .btn-ghost,
+        .btn-danger {
+            min-height: 2.75rem;
+        }
+    }
+
     .btn-lg {
         @apply min-h-[3rem] px-6 text-base;
     }
@@ -125,6 +136,16 @@
     .chip-red     { @apply chip bg-red-50 text-red-700 ring-red-200; }
     .chip-amber   { @apply chip bg-amber-50 text-amber-800 ring-amber-200; }
     .chip-blue    { @apply chip bg-sky-50 text-sky-800 ring-sky-200; }
+
+    /* Keyboard shortcut hint inside a button; only shown where there's a keyboard-and-mouse setup */
+    .kbd {
+        @apply hidden h-5 min-w-[1.25rem] items-center justify-center rounded-md border border-current px-1 text-[0.6875rem] font-medium leading-none opacity-50 [@media(hover:hover)]:inline-flex;
+    }
+
+    /* Round "mark as done" button, shared by the dashboard and task list */
+    .check-btn {
+        @apply flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-ink-300 text-transparent transition hover:border-brand-600 hover:bg-brand-50 hover:text-brand-700 [@media(pointer:coarse)]:h-8 [@media(pointer:coarse)]:w-8;
+    }
 
     /* Tables */
     .table {

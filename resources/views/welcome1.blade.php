@@ -46,7 +46,7 @@
                                 stroke-dasharray="{{ $circumference }}" stroke-dashoffset="{{ $circumference * 0.26 }}" />
                     </svg>
                     <div class="absolute inset-0 flex flex-col items-center justify-center">
-                        <span class="text-4xl font-semibold tabular-nums tracking-tight text-ink-900">18:42</span>
+                        <span class="text-4xl font-semibold tabular-nums tracking-tight text-ink-900">29:20</span>
                         <span class="mt-1 text-xs text-ink-500">remaining</span>
                     </div>
                 </div>

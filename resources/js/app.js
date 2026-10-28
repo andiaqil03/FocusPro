@@ -1,5 +1,6 @@
 import './bootstrap';
 import './motion';
+import './shortcuts';
 
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse';
