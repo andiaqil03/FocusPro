@@ -1,66 +1,215 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# FocusPro
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+**Deep work, without the distractions.**
+
+FocusPro is a productivity web app that brings task planning, a Pomodoro focus timer and a distraction blocker into one calm workspace. Plan what matters, protect the time to do it with a focus session that blocks the sites you choose, then look back at your progress with analytics and PDF reports.
+
+Built as my Final Year Project and later extended and redesigned for my portfolio.
+
+<p>
+  <img alt="Laravel 12" src="https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white">
+  <img alt="PHP 8.2+" src="https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php&logoColor=white">
+  <img alt="MySQL" src="https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white">
+  <img alt="Firebase Realtime Database" src="https://img.shields.io/badge/Firebase-Realtime%20DB-FFCA28?logo=firebase&logoColor=black">
+  <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind%20CSS-3-06B6D4?logo=tailwindcss&logoColor=white">
+  <img alt="Chrome extension (Manifest V3)" src="https://img.shields.io/badge/Chrome%20extension-MV3-4285F4?logo=googlechrome&logoColor=white">
 </p>
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Tasks
+- Create, edit and delete tasks with a **category**, **due date**, **priority** (P1 Urgent → P4 Low) and **status** (to do, in progress, done).
+- Tick a task off straight from the list or the dashboard, with an **Undo** in the confirmation toast.
+- Search, filter by category, and sort by due date or priority.
+- Overdue and upcoming work is flagged automatically ("Overdue", "Due today", "Due tomorrow").
+- Export all tasks, or only completed ones, as a **PDF**.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Focus sessions (Pomodoro)
+- Adjustable focus and break lengths, with a progress ring, Focus/Break modes and the time remaining shown in the browser tab.
+- Start a session **on a specific task** from the dashboard's "Up next" list.
+- Each finished session (cycles and minutes) is saved to your history.
+- The sites you want blocked are remembered between sessions.
 
-## Learning Laravel
+### Distraction blocking (browser extension)
+- A companion **Chrome extension** blocks the sites you list, **only while a focus session is running**.
+- Starting or ending a session on the website switches blocking on or off within a second.
+- Blocked sites show a calm "Stay focused" page with a breathing guide, the session's blocked list, a count of distractions blocked today and a link back to your session.
+- Tabs that were already open on a blocked site are redirected as soon as the session starts.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Analytics
+- Totals for sessions, cycles, focus hours and average session length.
+- Sessions per day for the last 7 or 30 days, focus-vs-break split and task completion rate.
+- Downloadable **PDF analytics report**.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Admin panel
+- Platform-wide stats (users, tasks, completion rate, sessions).
+- User management: view all users, change roles, delete non-admin accounts.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Experience
+- Minimal, consistent UI built on a small design system (Plus Jakarta Sans, one teal accent, reusable Tailwind component classes).
+- Subtle motion with [Motion](https://motion.dev) (the framework-agnostic version of Framer Motion): content rises in on scroll, numbers count up, progress rings draw in. Fully disabled for users who prefer reduced motion.
+- Keyboard shortcuts on the dashboard: <kbd>N</kbd> new task, <kbd>F</kbd> start focusing.
+- Responsive from phone to desktop, with accessible labels, focus states and live regions.
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## How distraction blocking works
 
-### Premium Partners
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant W as FocusPro (Laravel)
+    participant F as Firebase Realtime DB
+    participant E as Chrome extension
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+    U->>W: Start focus session (blocked: youtube.com, …)
+    W->>F: focusStatus/{userId} = { isFocusing: true, blockedSites }
+    W-->>E: window.postMessage (via content script): "status changed"
+    E->>F: Read focusStatus/{userId}
+    E->>E: Install declarativeNetRequest redirect rules
+    U->>E: Opens youtube.com
+    E-->>U: Redirect to "Stay focused" page
+    U->>W: End session
+    W->>F: isFocusing = false
+    E->>E: Remove rules
+```
 
-## Contributing
+- **The web app is the source of truth.** The Pomodoro page writes the session state to Firebase under the logged-in user's ID.
+- **The extension links itself to the logged-in user automatically.** A content script on the FocusPro site forwards the user ID and "status changed" events to the extension, so there is nothing to configure.
+- **Blocking survives Chrome's MV3 service-worker sleeps.** It uses Chrome's `declarativeNetRequest` rules, which keep working while the background worker is asleep. The extension also re-checks Firebase every 30 seconds as a fallback.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## Tech stack
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Layer | Technology |
+|---|---|
+| Backend | Laravel 12 (PHP 8.2+), Laravel Breeze authentication |
+| Database | MySQL 8 / MariaDB (app data), Firebase Realtime Database (live focus status) |
+| Frontend | Blade, Tailwind CSS 3, Alpine.js, Motion, Chart.js, Vite |
+| Reports | barryvdh/laravel-dompdf |
+| Extension | Chrome Manifest V3: declarativeNetRequest, webNavigation, alarms, storage |
+| Testing | Pest (feature tests on in-memory SQLite) |
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Getting started
 
-## License
+### Requirements
+- PHP 8.2+ with the `pdo_mysql`, `mbstring`, `openssl`, `fileinfo`, `gd`, `zip` and `intl` extensions
+- Composer 2
+- Node.js 18+ and npm
+- MySQL 8 or MariaDB. [WampServer](https://www.wampserver.com/) / XAMPP / Laragon all work.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Installation
+
+```bash
+git clone https://github.com/andiaqil03/FocusPro.git
+cd FocusPro
+
+composer install
+npm install
+
+cp .env.example .env
+php artisan key:generate
+```
+
+Edit `.env` to point at MySQL:
+
+```env
+APP_NAME=FocusPro
+APP_URL=http://127.0.0.1:8000
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=focuspro
+DB_USERNAME=root
+DB_PASSWORD=
+
+# Optional: credentials for the seeded admin account
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=password
+```
+
+Create an empty `focuspro` database (for example in phpMyAdmin), then:
+
+```bash
+php artisan migrate --seed   # tables + demo accounts
+php artisan storage:link     # profile photos
+npm run build                # or `npm run dev` while working on the UI
+php artisan serve
+```
+
+Open **http://127.0.0.1:8000**.
+
+### Demo accounts
+
+| Role | Email | Password |
+|---|---|---|
+| User | `test@example.com` | `password` |
+| Admin | `admin@example.com` | `password` (or `ADMIN_EMAIL` / `ADMIN_PASSWORD`) |
+
+To fill an account with **three months of realistic history** (tasks across categories and priorities, about 130 focus sessions) so the dashboard and analytics have something to show:
+
+```bash
+DEMO_USER_EMAIL=test@example.com php artisan db:seed --class=DemoActivitySeeder
+```
+
+The seeder is deterministic and safe to re-run. It only replaces the data it created.
+
+### Installing the browser extension
+
+1. Open `chrome://extensions` and turn on **Developer mode**.
+2. Click **Load unpacked** and choose the `focus_blocker_firebase_fixed/` folder.
+3. Open the FocusPro **Focus** page while logged in. The extension popup should show your user ID.
+4. Add a site (e.g. `youtube.com`), press **Start**, and try opening it.
+
+The extension recognises the app at `http://127.0.0.1:8000` and `http://localhost:8000`. For a deployed site, add its URL to `content_scripts.matches` in `manifest.json`.
+
+---
+
+## Testing
+
+```bash
+php artisan test
+```
+
+Feature tests cover authentication, profiles and task security: ownership checks, mass-assignment protection, upload validation and route protection. They run on an in-memory SQLite database, so they never touch your MySQL data.
+
+For a click-through checklist of every feature, see [`docs/MANUAL_TESTING.md`](docs/MANUAL_TESTING.md).
+
+---
+
+## Project structure
+
+```
+app/Http/Controllers/        Tasks, Pomodoro, Analytics, Dashboard, Profile, Admin
+database/migrations/         Users, tasks, pomodoro_sessions, roles
+database/seeders/            Demo accounts + DemoActivitySeeder
+resources/views/             Blade pages, layouts and components (x-icon, x-stat-card, chips…)
+resources/css/app.css        Design tokens and component classes (.btn, .card, .input, .chip…)
+resources/js/motion.js       Reveal / stagger / count-up animations and toasts
+resources/js/shortcuts.js    Single-key keyboard shortcuts
+focus_blocker_firebase_fixed/  Chrome extension (background worker, blocked page, popup)
+docs/                        Manual testing guide
+tests/Feature/               Pest feature tests
+```
+
+---
+
+## Roadmap
+
+- Secure the Firebase Realtime Database with per-user authentication tokens issued by Laravel.
+- Move the Firebase configuration into environment variables.
+- Dark mode.
+- Weekly focus goals and streaks.
+- Publish the extension to the Chrome Web Store and support Firefox.
+
+---
+
+## Author
+
+Built by **[@andiaqil03](https://github.com/andiaqil03)**.
